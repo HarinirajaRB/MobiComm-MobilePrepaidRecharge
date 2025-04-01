@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobi Comm Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --primary: #3a86ff;
+            --text-dark: #212529;
+            --text-light: #6c757d;
+            --warning: #ffc107;
+            --success: #20c997;
+            --danger: #dc3545;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        .navbar-brand {
+            color: var(--primary) !important;
+            font-weight: 600;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 56px;
+            bottom: 0;
+            width: 240px;
+            background-color: white;
+            box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-light);
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: rgba(58, 134, 255, 0.05);
+            color: var(--primary);
+        }
+
+        .sidebar .nav-link.active {
+            color: var(--primary);
+            border-left: 3px solid var(--primary);
+            background-color: rgba(58, 134, 255, 0.1);
+        }
+
+        .main-content {
+            margin-left: 240px;
+            padding: 1.5rem;
+            margin-top: 56px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+
+        @media (max-width: 991.98px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
+        /* Dashboard cards */
+        .stat-card {
+            border-radius: 0.5rem;
+            border-left: 4px solid var(--primary);
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: rgba(58, 134, 255, 0.1);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-card.warning {
+            border-left-color: var(--warning);
+        }
+        
+        .stat-card.warning .stat-icon {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: var(--warning);
+        }
+        
+        .stat-card.success {
+            border-left-color: var(--success);
+        }
+        
+        .stat-card.success .stat-icon {
+            background-color: rgba(32, 201, 151, 0.1);
+            color: var(--success);
+        }
+
+        .expiring-badge {
+            background-color: var(--warning);
+            color: #212529;
+        }
+
+        .table-responsive {
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .dashboard-table {
+            min-width: 100%;
+            margin-bottom: 0;
+        }
+
+        .dashboard-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .dashboard-table td {
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        /* Modal styles */
+        .modal-content {
+            border-radius: 0.5rem;
+        }
+
+        .modal-header {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .modal-header .btn-close {
+            filter: invert(1);
+        }
+
+        .modal-body {
+            white-space: pre-wrap;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .dashboard-table .hide-on-mobile {
+                display: none;
+            }
+
+            .dashboard-table td, .dashboard-table th {
+                font-size: 0.875rem;
+            }
+
+            .stat-card {
+                text-align: center;
+            }
+
+            .stat-card .stat-icon {
+                margin: 0 auto 1rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .dashboard-table td, .dashboard-table th {
+                font-size: 0.75rem;
+                padding: 0.5rem;
+            }
+
+            .btn-sm {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
+        <div class="container-fluid">
+            <button class="btn d-lg-none border-0" type="button" id="sidebarToggle" aria-label="Toggle navigation">
+                <i class="bi bi-list"></i>
+            </button>
+            
+            <a class="navbar-brand d-flex align-items-center gap-2 ms-2" href="#">
+                <i class="bi bi-box"></i>
+                <span>Mobi Comm</span>
+            </a>
+            
+            <div class="ms-auto d-flex align-items-center gap-3">
+                <div class="d-none d-md-block position-relative">
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="text" class="form-control ps-4 rounded-pill" style="width: 220px;" placeholder="Search...">
+                </div>
+                
+                <div class="dropdown">
+                    <div class="d-flex align-items-center gap-2" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="user-avatar">A</div>
+                        <span class="d-none d-md-inline">Admin</span>
+                        <i class="bi bi-chevron-down small ms-1"></i>
+                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="py-2">
+            <nav class="nav flex-column">
+                <a class="nav-link active" href="adminDashboard.html">
+                    <i class="bi bi-grid-1x2-fill"></i>
+                    Dashboard
+                </a>
+                <a class="nav-link" href="planManagement.html">
+                    <i class="bi bi-box"></i>
+                    Plan Management
+                </a>
+                <a class="nav-link" href="userManagement.html">
+                    <i class="bi bi-people"></i>
+                    User Management
+                </a>
+                <a class="nav-link" href="analytics.html">
+                    <i class="bi bi-bar-chart"></i>
+                    Analytics
+                </a>
+                <a class="nav-link" href="adminProfile.html">
+                    <i class="bi bi-person-circle"></i>
+                    Profile
+                </a>
+                <a class="nav-link" href="#" onclick="logout()">
+                    <i class="bi bi-box-arrow-right"></i>
+                    Logout
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container-fluid">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+                <h4 class="mb-0">Dashboard Overview</h4>
+                <div class="mt-2 mt-lg-0">
+                    <button class="btn btn-sm btn-outline-primary me-2" onclick="exportData()">
+                        <i class="bi bi-download me-1"></i> Export
+                    </button>
+                    <button class="btn btn-sm btn-primary" onclick="fetchDashboardData()">
+                        <i class="bi bi-arrow-repeat me-1"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row g-4 mb-4">
+                <!-- Total Subscribers -->
+                <div class="col-md-3 col-sm-6">
+                    <div class="card stat-card shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="stat-icon me-3">
+                                <i class="bi bi-people-fill fs-4"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted mb-1">Total Subscribers</h6>
+                                <h3 class="fw-bold mb-0" id="totalSubscribers">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Plans Expiring Within 3 Days -->
+                <div class="col-md-3 col-sm-6">
+                    <div class="card stat-card warning shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="stat-icon me-3">
+                                <i class="bi bi-hourglass-split fs-4"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted mb-1">Plans Expiring Soon</h6>
+                                <h3 class="fw-bold mb-0" id="expiringPlans">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="col-md-3 col-sm-6">
+                    <div class="card stat-card warning shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="stat-icon me-3">
+                                <i class="bi bi-alarm-fill fs-4"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted mb-1">Recent Transactions</h6>
+                                <h3 class="fw-bold mb-0" id="recentTransactions">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Plans -->
+                <div class="col-md-3 col-sm-6">
+                    <div class="card stat-card success shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="stat-icon me-3">
+                                <i class="bi bi-check-circle-fill fs-4"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted mb-1">Active Plans</h6>
+                                <h3 class="fw-bold mb-0" id="activePlans">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Expiring Subscribers Table -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap">
+                        <h5 class="mb-0">
+                            <i class="bi bi-hourglass-split me-2 text-warning"></i>
+                            Subscribers with Plans Expiring Within 3 Days
+                        </h5>
+                        <div class="mt-2 mt-md-0 position-relative">
+                            <i class="bi bi-search search-icon"></i>
+                            <input type="text" class="form-control form-control-sm ps-4" id="expiringSearch" placeholder="Search subscriber...">
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover dashboard-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Mobile</th>
+                                    <th>Plan</th>
+                                    <th>Expiry Date</th>
+                                    <th>Days Left</th>
+                                    <th class="hide-on-mobile">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expiringSubscribersList">
+                                <tr>
+                                    <td colspan="7" class="text-center py-3">Loading data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Transactions Table -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clock-history me-2 text-warning"></i>
+                            Recent Recharge Transactions
+                        </h5>
+                        <div class="mt-2 mt-md-0 position-relative">
+                            <i class="bi bi-search search-icon"></i>
+                            <input type="text" class="form-control form-control-sm ps-4" id="transactionSearch" placeholder="Search mobile number...">
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover dashboard-table">
+                            <thead>
+                                <tr>
+                                    <th>Transaction ID</th>
+                                    <th>Subscriber</th>
+                                    <th>Mobile Number</th>
+                                    <th>Plan</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th class="hide-on-mobile">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentTransactionsList">
+                                <tr>
+                                    <td colspan="8" class="text-center py-3">Loading data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Subscribers Table -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap">
+                        <h5 class="mb-0">
+                            <i class="bi bi-people me-2 text-primary"></i>
+                            All Subscribers
+                        </h5>
+                        <div class="mt-2 mt-md-0 position-relative">
+                            <i class="bi bi-search search-icon"></i>
+                            <input type="text" class="form-control form-control-sm ps-4" id="subscriberSearch" placeholder="Search subscriber...">
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover dashboard-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Mobile</th>
+                                    <th>Email</th>
+                                    <th>Operator</th>
+                                    <th class="hide-on-mobile">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="subscribersList">
+                                <tr>
+                                    <td colspan="6" class="text-center py-3">Loading data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Notification Modal -->
+    <div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="notificationModalLabel">Notification Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="notificationModalBody">
+                    <!-- Notification message will be inserted here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Constants
+        const API_URL = 'http://localhost:8015';
+
+        // Utility function to get headers with authorization token
+        const headers = () => ({
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('mobi_comm_auth_token')}`
+        });
+
+        function checkAuth() {
+            const token = localStorage.getItem('mobi_comm_auth_token');
+            const role = localStorage.getItem('user_role');
+            if (!token || role !== 'ROLE_ADMIN') {
+                window.location.href = 'adminLogin.html';
+                return false;
+            }
+            return true;
+        }
+
+        function logout() {
+            localStorage.removeItem('mobi_comm_auth_token');
+            localStorage.removeItem('user_role');
+            window.location.href = 'adminLogin.html';
+        }
+
+        async function fetchDashboardData() {
+            if (!checkAuth()) return;
+
+            try {
+                showLoadingState();
+
+                const [subscribersRes, plansRes, transactionsRes] = await Promise.all([
+                    fetch(`${API_URL}/api/subscribers/allsubscribers`, { headers: headers() }),
+                    fetch(`${API_URL}/api/plans`, { headers: headers() }),
+                    fetchAllTransactions()
+                ]);
+
+                if (!subscribersRes.ok || !plansRes.ok) {
+                    throw new Error('Failed to fetch dashboard data');
+                }
+
+                const subscribers = await subscribersRes.json();
+                const plans = await plansRes.json();
+                const transactions = transactionsRes;
+
+                const expiringSubscribers = await fetchExpiringSubscribers(subscribers, transactions);
+
+                updateDashboardUI({
+                    totalSubscribers: subscribers.length,
+                    expiringPlans: expiringSubscribers.length,
+                    recentTransactions: transactions.length,
+                    activePlans: plans.filter(plan => plan.status === 'Active').length,
+                    subscribers,
+                    transactions,
+                    expiringSubscribers
+                });
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+                showModal('Error', 'Failed to load dashboard data. Please check your connection and try again.', 'danger');
+                resetUIOnError();
+            }
+        }
+
+        async function fetchAllTransactions() {
+            try {
+                const allTransactions = [];
+                const subscribersRes = await fetch(`${API_URL}/api/subscribers/allsubscribers`, { headers: headers() });
+                if (!subscribersRes.ok) throw new Error('Failed to fetch subscribers');
+
+                const subscribers = await subscribersRes.json();
+
+                const transactionPromises = subscribers.map(async subscriber => {
+                    try {
+                        const response = await fetch(`${API_URL}/api/recharge/subscriber/${subscriber.id}`, { 
+                            headers: headers() 
+                        });
+                        if (response.ok) {
+                            const transactions = await response.json();
+                            return transactions;
+                        }
+                        return [];
+                    } catch (error) {
+                        console.error(`Error fetching transactions for subscriber ${subscriber.id}:`, error);
+                        return [];
+                    }
+                });
+
+                const results = await Promise.all(transactionPromises);
+                results.forEach(transactions => {
+                    if (Array.isArray(transactions)) {
+                        allTransactions.push(...transactions);
+                    }
+                });
+
+                return allTransactions.sort((a, b) => new Date(b.rechargeDate) - new Date(a.rechargeDate));
+            } catch (error) {
+                console.error('Error fetching all transactions:', error);
+                return [];
+            }
+        }
+
+        async function fetchExpiringSubscribers(subscribers, transactions) {
+            const expiringSubscribers = [];
+            const today = new Date();
+            const threeDaysFromNow = new Date(today);
+            threeDaysFromNow.setDate(today.getDate() + 3);
+
+            for (const subscriber of subscribers) {
+                const subscriberTransactions = transactions.filter(t => t.subscriber?.id === subscriber.id);
+                if (subscriberTransactions.length > 0) {
+                    const latestTransaction = subscriberTransactions.sort((a, b) => 
+                        new Date(b.rechargeDate) - new Date(a.rechargeDate))[0];
+                    
+                    const plan = latestTransaction.plan;
+                    if (plan && plan.validity) {
+                        const rechargeDate = new Date(latestTransaction.rechargeDate);
+                        const validityDays = parseInt(plan.validity.match(/\d+/)?.[0]) || 0;
+                        const expiryDate = new Date(rechargeDate);
+                        expiryDate.setDate(rechargeDate.getDate() + validityDays);
+
+                        const daysLeft = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+                        if (daysLeft >= 0 && expiryDate <= threeDaysFromNow) {
+                            expiringSubscribers.push({
+                                ...subscriber,
+                                planName: plan.planName,
+                                expiryDate: expiryDate,
+                                daysLeft: daysLeft,
+                                transaction: latestTransaction
+                            });
+                        }
+                    }
+                }
+            }
+            return expiringSubscribers;
+        }
+
+        function showLoadingState() {
+            document.getElementById('expiringSubscribersList').innerHTML = 
+                '<tr><td colspan="7" class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div> Loading expiring subscribers...</td></tr>';
+            document.getElementById('recentTransactionsList').innerHTML = 
+                '<tr><td colspan="8" class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div> Loading transactions...</td></tr>';
+            document.getElementById('subscribersList').innerHTML = 
+                '<tr><td colspan="6" class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div> Loading subscribers...</td></tr>';
+        }
+
+        function resetUIOnError() {
+            document.getElementById('totalSubscribers').textContent = '0';
+            document.getElementById('expiringPlans').textContent = '0';
+            document.getElementById('recentTransactions').textContent = '0';
+            document.getElementById('activePlans').textContent = '0';
+            document.getElementById('expiringSubscribersList').innerHTML = 
+                '<tr><td colspan="7" class="text-center py-3">Failed to load data</td></tr>';
+            document.getElementById('recentTransactionsList').innerHTML = 
+                '<tr><td colspan="8" class="text-center py-3">Failed to load data</td></tr>';
+            document.getElementById('subscribersList').innerHTML = 
+                '<tr><td colspan="6" class="text-center py-3">Failed to load data</td></tr>';
+        }
+
+        function updateDashboardUI(data) {
+            document.getElementById('totalSubscribers').textContent = data.totalSubscribers.toLocaleString();
+            document.getElementById('expiringPlans').textContent = data.expiringPlans.toLocaleString();
+            document.getElementById('recentTransactions').textContent = data.recentTransactions.toLocaleString();
+            document.getElementById('activePlans').textContent = data.activePlans.toLocaleString();
+
+            const expiringSubscribersList = document.getElementById('expiringSubscribersList');
+            if (data.expiringSubscribers.length === 0) {
+                expiringSubscribersList.innerHTML = '<tr><td colspan="7" class="text-center py-3">No subscribers with plans expiring soon</td></tr>';
+            } else {
+                expiringSubscribersList.innerHTML = data.expiringSubscribers.map(sub => `
+                    <tr>
+                        <td>${sub.id}</td>
+                        <td>${sub.name}</td>
+                        <td>${sub.mobile}</td>
+                        <td>${sub.planName || 'N/A'}</td>
+                        <td>${formatDate(sub.expiryDate)}</td>
+                        <td><span class="badge bg-warning">${sub.daysLeft} day${sub.daysLeft !== 1 ? 's' : ''}</span></td>
+                        <td class="hide-on-mobile">
+                            <button class="btn btn-sm btn-outline-info me-1" onclick="viewSubscriberDetails(${sub.id})">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-warning" onclick="notifySubscriber(${sub.id}, '${sub.mobile}', '${sub.email}', '${sub.planName}', ${sub.daysLeft})">
+                                <i class="bi bi-bell"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            const recentTransactionsList = document.getElementById('recentTransactionsList');
+            if (data.transactions.length === 0) {
+                recentTransactionsList.innerHTML = '<tr><td colspan="8" class="text-center py-3">No transactions found</td></tr>';
+            } else {
+                const recentTransactions = data.transactions.slice(0, 10);
+                recentTransactionsList.innerHTML = recentTransactions.map(trans => {
+                    const statusClass = trans.status === 'SUCCESS' ? 'success' : 
+                                       trans.status === 'FAILED' ? 'danger' : 'warning';
+                    const subscriber = data.subscribers.find(sub => sub.id === trans.subscriber?.id);
+                    const subscriberName = subscriber ? subscriber.name : 'Unknown';
+                    return `
+                        <tr>
+                            <td>${trans.transactionId}</td>
+                            <td>${subscriberName}</td>
+                            <td>${trans.mobileNumber}</td>
+                            <td>${trans.plan?.planName || 'N/A'}</td>
+                            <td>₹${trans.amount.toFixed(2)}</td>
+                            <td>${formatDate(trans.rechargeDate)}</td>
+                            <td><span class="badge bg-${statusClass}">${trans.status}</span></td>
+                            <td class="hide-on-mobile">
+                                <button class="btn btn-sm btn-outline-primary" onclick="viewTransactionDetails('${trans.id}')">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            const subscribersList = document.getElementById('subscribersList');
+            if (data.subscribers.length === 0) {
+                subscribersList.innerHTML = '<tr><td colspan="6" class="text-center py-3">No subscribers found</td></tr>';
+            } else {
+                const displayedSubscribers = data.subscribers.slice(0, 10);
+                subscribersList.innerHTML = displayedSubscribers.map(sub => `
+                    <tr>
+                        <td>${sub.id}</td>
+                        <td>${sub.name}</td>
+                        <td>${sub.mobile}</td>
+                        <td>${sub.email}</td>
+                        <td>${sub.operator || 'N/A'}</td>
+                        <td class="hide-on-mobile">
+                            <button class="btn btn-sm btn-outline-info me-1" onclick="viewSubscriberDetails(${sub.id})">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editSubscriber(${sub.id})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteSubscriber(${sub.id})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            applySearchFilters();
+        }
+
+        function formatDate(date) {
+            if (!date) return 'N/A';
+            return new Date(date).toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function formatPhoneNumber(mobile) {
+            if (!mobile) {
+                console.error('Mobile number is undefined or null');
+                return '';
+            }
+            const cleaned = mobile.replace(/\D/g, '');
+            if (cleaned.startsWith('+91')) {
+                return cleaned;
+            }
+            if (cleaned.length === 10) {
+                return `+91${cleaned}`;
+            }
+            if (cleaned.length === 12 && cleaned.startsWith('91')) {
+                return `+${cleaned}`;
+            }
+            console.warn(`Phone number ${mobile} is not in a recognizable format. Returning as-is: ${cleaned}`);
+            return cleaned;
+        }
+
+        function showModal(title, message, type = 'success') {
+            const modal = new bootstrap.Modal(document.getElementById('notificationModal'), {
+                keyboard: false
+            });
+            const modalTitle = document.getElementById('notificationModalLabel');
+            const modalBody = document.getElementById('notificationModalBody');
+            const modalHeader = document.querySelector('#notificationModal .modal-header');
+
+            modalTitle.textContent = title;
+            modalBody.textContent = message;
+
+            modalHeader.classList.remove('bg-success', 'bg-danger', 'bg-warning');
+            if (type === 'success') {
+                modalHeader.classList.add('bg-success');
+            } else if (type === 'danger') {
+                modalHeader.classList.add('bg-danger');
+            } else if (type === 'warning') {
+                modalHeader.classList.add('bg-warning');
+            } else {
+                modalHeader.classList.add('bg-primary');
+            }
+
+            modal.show();
+        }
+
+        async function notifySubscriber(subscriberId, mobile, email, planName, daysLeft) {
+            const formattedMobile = formatPhoneNumber(mobile);
+            if (!formattedMobile || !formattedMobile.startsWith('+')) {
+                showModal('Error', 'Invalid phone number format. Please ensure the mobile number is correct.', 'danger');
+                return;
+            }
+
+            const message = `Your Mobi Comm pack on ${mobile} is about to expire in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}! Recharge now with Rs349 to stay connected. Get UL calls, 2GB data/day, 100 SMS/day & UL 5G available, for 28 days. Recharge on Mobi Comm website with ZERO CONVENIENCE FEE at mobicomm.com/recharge`;
+
+            console.log(`Attempting to send notifications to: ${formattedMobile}, ${email}`);
+            console.log(`Message: ${message}`);
+
+            let emailSuccess = false;
+            let smsSuccess = false;
+            let smsErrorMessage = '';
+            let emailErrorMessage = '';
+
+            try {
+                const emailResponse = await fetch(`${API_URL}/api/send-email`, {
+                    method: 'POST',
+                    headers: headers(),
+                    body: JSON.stringify({
+                        to: email,
+                        subject: 'Plan Expiration Reminder',
+                        body: message
+                    })
+                });
+
+                if (emailResponse.ok) {
+                    emailSuccess = true;
+                    console.log('Email sent successfully');
+                } else {
+                    emailErrorMessage = await emailResponse.text();
+                    console.error(`Email failed: ${emailResponse.status} - ${emailErrorMessage}`);
+                }
+
+                console.log(`Sending SMS to ${formattedMobile}`);
+                const smsResponse = await fetch(`${API_URL}/api/send-sms`, {
+                    method: 'POST',
+                    headers: headers(),
+                    body: JSON.stringify({
+                        to: formattedMobile,
+                        message: message
+                    })
+                });
+
+                const smsResponseText = await smsResponse.text();
+                console.log(`SMS Response: ${smsResponse.status} - ${smsResponseText}`);
+
+                if (smsResponse.ok) {
+                    smsSuccess = true;
+                    console.log('SMS sent successfully');
+                } else {
+                    smsErrorMessage = smsResponseText || 'Unknown error';
+                    console.error(`SMS failed: ${smsResponse.status} - ${smsErrorMessage}`);
+                }
+
+                if (emailSuccess && smsSuccess) {
+                    showModal(
+                        'Success',
+                        `Notifications sent successfully to ${mobile} and ${email}:\n\n${message}`,
+                        'success'
+                    );
+                } else if (emailSuccess) {
+                    showModal(
+                        'Partial Success',
+                        `Email sent successfully to ${email}, but SMS failed:\nError: ${smsErrorMessage}\n\n${message}`,
+                        'warning'
+                    );
+                } else if (smsSuccess) {
+                    showModal(
+                        'Partial Success',
+                        `SMS sent successfully to ${formattedMobile}, but email failed:\nError: ${emailErrorMessage}\n\n${message}`,
+                        'warning'
+                    );
+                } else {
+                    throw new Error(`Both notifications failed.\nEmail Error: ${emailErrorMessage}\nSMS Error: ${smsErrorMessage}`);
+                }
+            } catch (error) {
+                console.error('Notification error:', error);
+                showModal(
+                    'Error',
+                    `Failed to send notifications: ${error.message}. Please check the console for details and try again.`,
+                    'danger'
+                );
+            }
+        }
+
+        function applySearchFilters() {
+            const expiringSearch = document.getElementById('expiringSearch');
+            expiringSearch.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('#expiringSubscribersList tr');
+                rows.forEach(row => {
+                    const name = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase();
+                    const mobile = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase();
+                    if ((name && name.includes(searchTerm)) || (mobile && mobile.includes(searchTerm))) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+
+            const transactionSearch = document.getElementById('transactionSearch');
+            transactionSearch.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('#recentTransactionsList tr');
+                rows.forEach(row => {
+                    const mobileNumber = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase();
+                    if (mobileNumber && mobileNumber.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+
+            const subscriberSearch = document.getElementById('subscriberSearch');
+            subscriberSearch.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('#subscribersList tr');
+                rows.forEach(row => {
+                    const name = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase();
+                    const mobile = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase();
+                    const email = row.querySelector('td:nth-child(4)')?.textContent.toLowerCase();
+                    if ((name && name.includes(searchTerm)) || (mobile && mobile.includes(searchTerm)) || (email && email.includes(searchTerm))) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        function viewSubscriberDetails(id) {
+            showModal('Info', `View details for subscriber ID: ${id}`);
+        }
+
+        function editSubscriber(id) {
+            showModal('Info', `Edit subscriber ID: ${id}`);
+        }
+
+        async function deleteSubscriber(id) {
+            if (!confirm(`Are you sure you want to delete subscriber ID: ${id}?`)) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/subscribers/${id}`, {
+                    method: 'DELETE',
+                    headers: headers()
+                });
+                
+                if (response.ok) {
+                    showModal('Success', 'Subscriber deleted successfully', 'success');
+                    fetchDashboardData();
+                } else {
+                    throw new Error('Failed to delete subscriber');
+                }
+            } catch (error) {
+                console.error('Error deleting subscriber:', error);
+                showModal('Error', 'Failed to delete subscriber. Please try again.', 'danger');
+            }
+        }
+
+        function viewTransactionDetails(id) {
+            showModal('Info', `View details for transaction ID: ${id}`);
+        }
+
+        function exportData() {
+            showModal('Info', 'Export functionality will be implemented here');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!checkAuth()) return;
+            
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('show');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth <= 991.98 && 
+                    !sidebar.contains(e.target) && 
+                    !sidebarToggle.contains(e.target) && 
+                    sidebar.classList.contains('show')) {
+                    sidebar.classList.remove('show');
+                }
+            });
+            
+            fetchDashboardData();
+            setInterval(fetchDashboardData, 5 * 60 * 1000);
+        });
+    </script>
+</body>
+</html>

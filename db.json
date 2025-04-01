@@ -1,4 +1,124 @@
 {
+
+  "users": [
+    {
+      "id": "1",
+      "name": "Harini Raja",
+      "email": "harinirajahrb@example.com",
+      "mobile": "8608171974",
+      "operator": "Mobi Comm",
+      "rechargeHistory": [
+        {
+          "plan": "3GB Daily Pack",
+          "amount": 599,
+          "date": "2025-02-28"
+        },
+        {
+          "plan": "3GB Daily Pack",
+          "amount": 599,
+          "date": "2025-02-28"
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "name": "Sneha Iyer",
+      "email": "sneha.iyer@example.com",
+      "mobile": "9012345678",
+      "operator": "Mobi Comm",
+      "rechargeHistory": [
+        {
+          "plan": "2GB Daily Pack",
+          "amount": 499,
+          "date": "2025-02-10"
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "name": "Vikram Singh",
+      "email": "vikram.singh@example.com",
+      "mobile": "7654321098",
+      "operator": "Mobi Comm",
+      "rechargeHistory": []
+    },
+    {
+      "id": "5",
+      "name": "Pooja Sharma",
+      "email": "pooja.sharma@example.com",
+      "mobile": "8765432109",
+      "operator": "Mobi Comm",
+      "rechargeHistory": [
+        {
+          "plan": "Unlimited Data Pack",
+          "amount": 799,
+          "date": "2025-02-20"
+        },
+        {
+          "plan": "1GB Daily Pack",
+          "amount": 299,
+          "date": "2025-01-05"
+        }
+      ]
+    },
+    {
+      "id": "6",
+      "name": "Ravi Verma",
+      "email": "ravi.verma@example.com",
+      "mobile": "6789012345",
+      "operator": "Mobi Comm",
+      "rechargeHistory": []
+    },
+    {
+      "id": "e2a5",
+      "name": "banu",
+      "email": "2k21ece065@gmail.com",
+      "mobile": "8765432190",
+      "operator": "Mobi Comm",
+      "rechargeHistory": []
+    },
+    {
+      "id": "0570",
+      "name": "Santhosh",
+      "email": "santhosh@gmail.com",
+      "mobile": "9789761807",
+      "operator": "Mobi Comm",
+      "rechargeHistory": []
+    },
+    {
+      "id": "fcbf",
+      "name": "Raja",
+      "email": "raja@gmail.com",
+      "mobile": "9842340675",
+      "operator": "Mobi Comm",
+      "rechargeHistory": []
+    },
+    {
+      "id": "6bde",
+      "name": "logee",
+      "email": "logee@gmail.com",
+      "mobile": "9842340674",
+      "operator": "Mobi Comm",
+      "rechargeHistory": []
+    },
+    {
+      "id": "bbe4",
+      "name": "hu",
+      "email": "ewj@gmail.com",
+      "mobile": "9876543321",
+      "operator": "Mobi Comm",
+      "rechargeHistory": []
+    },
+    {
+      "id": "e1ab",
+      "name": "Santhuuuuuuuuu",
+      "email": "leodas@gmail.com",
+      "mobile": "9876543321",
+      "operator": "Mobi Comm",
+      "rechargeHistory": []
+    }
+  ],
+
   "plans": [
     {
       "id": "1",

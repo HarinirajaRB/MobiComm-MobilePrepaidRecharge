@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MobiComm Prepaid Plans</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #042b6e;    /* Deep Blue */
+            --secondary-color: #03a89e;  /* Vibrant Teal */
+            --tertiary-color: #f4c430;   /* Mustard Yellow */
+            --light-color: #f0f2f5;      /* Light Gray */
+            --dark-color: #343a40;       /* Dark Gray */
+            --success-color: #28a745;    /* Green */
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right, #e6ebf1, #d1dbe8);
+        }
+        
+        .navbar {
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: white !important;
+        }
+
+        .navbar-nav a {
+            color: white;
+        }
+        
+        .nav-pills .nav-link {
+            border-radius: 30px;
+            padding: 10px 20px;
+            margin: 0 5px;
+            font-weight: 600;
+            color: var(--dark-color);
+            transition: all 0.3s ease;
+        }
+        
+        .nav-pills .nav-link.active {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 12px rgba(4, 43, 110, 0.3);
+        }
+        
+        .plan-card {
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 25px;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        .plan-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-header {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 15px 20px;
+        }
+        
+        .badge-custom {
+            background: linear-gradient(45deg, var(--tertiary-color), #fff3b0);
+            color: var(--dark-color);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .plan-price {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        
+        .plan-validity {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .feature-icon {
+            width: 30px;
+            color: var(--secondary-color);
+            margin-right: 10px;
+            text-align: center;
+        }
+        
+        .btn-view-details {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 30px;
+            padding: 8px 20px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(4, 43, 110, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-view-details:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(3, 168, 158, 0.4);
+        }
+        
+        .btn-recharge {
+            background-color: #a80348;
+            border: none;
+            border-radius: 30px;
+            padding: 8px 20px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(98, 205, 224, 0.3);
+            transition: all 0.3s ease;
+            margin-left: 10px; /* Space between buttons */
+        }
+        
+        .btn-recharge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(91, 112, 229, 0.4);
+            background-color: #dd2471;
+        }
+        
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 300px;
+        }
+        
+        .search-box {
+            max-width: 500px;
+            margin: 0 auto 20px;
+        }
+        
+        .search-box .form-control {
+            border-radius: 30px;
+            padding: 10px 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--secondary-color);
+        }
+        
+        /* Modal Styles */
+        .modal-dialog {
+            max-width: 500px;
+            margin: 1.75rem auto;
+        }
+    
+        .modal-content {
+            border-radius: 15px;
+            overflow: hidden;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            background: white;
+        }
+    
+        .modal-header {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-bottom: none;
+            padding: 15px 20px;
+            position: relative;
+        }
+    
+        .modal-title {
+            font-weight: 600;
+            font-size: 1.5rem;
+            letter-spacing: 0.5px;
+        }
+    
+        .btn-close {
+            filter: brightness(0) invert(1);
+            opacity: 0.8;
+            transition: opacity 0.2s ease;
+        }
+    
+        .btn-close:hover {
+            opacity: 1;
+        }
+    
+        .modal-body {
+            padding: 20px;
+            color: var(--dark-color);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+    
+        .modal-body p {
+            margin-bottom: 15px;
+        }
+    
+        .modal-body strong {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+    
+        .modal-body .btn {
+            border-radius: 25px;
+            padding: 8px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+    
+        .modal-body .btn-secondary {
+            background-color: var(--tertiary-color);
+            border: none;
+            color: var(--dark-color);
+        }
+    
+        .modal-body .btn-secondary:hover {
+            background-color: #e0b028;
+            transform: translateY(-2px);
+        }
+    
+        .modal-body .btn-success {
+            background-color: #042b6e;
+            border: none;
+            box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
+        }
+    
+        .modal-body .btn-success:hover {
+            background-color: #03a89e;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(40, 167, 69, 0.4);
+        }
+    
+        .modal-body hr {
+            border: 0;
+            height: 1px;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            margin: 20px 0;
+        }
+
+        /* Subscriber Info Card Button */
+        .change-subscriber {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            font-size: 0.875rem;
+            padding: 4px 12px;
+            transition: all 0.3s ease;
+        }
+
+        .change-subscriber:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(4, 43, 110, 0.3);
+        }
+
+        footer{
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        }
+    </style>
+</head> 
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <h2><i class="bi bi-phone"></i>MOBI COMM</h2>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html">Plans</a></li>
+                    <li class="nav-item"><a class="nav-link" href="about.html">About Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">FAQ</a></li>
+                </ul>
+                <a href="support.html" class="btn register-btn">Support</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2 class="mb-4 text-center">Browse Our Prepaid Plans</h2>
+        
+        <div id="subscriber-info"></div>
+        
+        <div class="search-box mb-4">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="fas fa-search text-muted"></i>
+                </span>
+                <input type="text" class="form-control border-start-0" id="searchPlans" placeholder="Search plans...">
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-12">
+                <ul class="nav nav-pills nav-fill" id="categoryTabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" data-category="all">All Plans</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="row" id="plans-container">
+            <div class="col-12 loading-spinner">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="planDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalPlanName">Plan Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="modalPlanDetails">
+                    <p>Loading plan details...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer text-white pt-4">
+        <div class="container">
+            <div class="row text-center text-md-start gy-3">
+                <div class="col-md-6 col-lg-3">
+                    <h3 class="fw-bold">Mobi Comm</h3>
+                    <p>Quick and secure mobile recharge platform</p>
+                    <p><strong>Call:</strong> 9876543210</p>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <h4>Quick Links</h4>
+                    <ul class="list-unstyled">
+                        <li><a href="index.html" class=" d-block text-white">Home</a></li>
+                        <li><a href="index.html" class=" d-block text-white">Plans</a></li>
+                        <li><a href="support.html" class=" d-block text-white">Support</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <h4>Support</h4>
+                    <ul class="list-unstyled">
+                        <li class="d-block"><a href="support.html" class="text-white">
+                            Help Center
+                        </a></li>
+                        <li class="d-block"><a href="support.html" class="text-white">
+                            Contact Us
+                        </a></li>
+                        <li class="d-block">
+                            <a href="support.html" class="text-white">
+                                FAQs
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <h4>Connect With Us</h4>
+                              <ul class="list-unstyled">
+                        <li><strong>Email:</strong> support@mobicomm.com</li>
+                        <li><strong>Phone:</strong> +91 98765 43210</li>
+                        <li><strong>Live Chat:</strong> Available 24/7</li>
+                    </ul>
+                </div>
+            </div>
+            <hr>
+            <div class="d-md-flex justify-content-between text-center py-2">
+                <p class="mb-2 mb-md-0">2025 © Mobi Comm. All Rights Reserved.</p>
+                <p>
+                    <a href="#" class="text-dark me-3">Terms of Use</a>
+                    <a href="#" class="text-dark">Privacy Policy</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        // Constants
+        const API_BASE_URL = 'http://localhost:8015';
+        const AUTH_TOKEN_KEY = 'mobi_comm_auth_token';
+        const TOKEN_EXPIRY_KEY = 'mobi_comm_token_expiry';
+    
+        // DOM Elements
+        const categoryTabs = document.getElementById('categoryTabs');
+        const plansContainer = document.getElementById('plans-container');
+        const searchInput = document.getElementById('searchPlans');
+        const modalPlanName = document.getElementById("modalPlanName");
+        const modalPlanDetails = document.getElementById("modalPlanDetails");
+    
+        // Initialize plans data and categories
+        let plansData = [];
+        let categories = new Set();
+    
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', initializeApp);
+        searchInput?.addEventListener('input', filterPlans);
+        plansContainer?.addEventListener('click', handlePlanDetailsClick);
+    
+        // Initialize the modal
+        const planDetailModal = new bootstrap.Modal(document.getElementById('planDetailModal'));
+    
+        async function initializeApp() {
+            try {
+                await refreshTokenIfNeeded();
+                await fetchAllPlans();
+                loadSubscriberInfo();
+            } catch (error) {
+                console.error('Initialization error:', error);
+            }
+        }
+    
+        async function refreshTokenIfNeeded() {
+            const token = localStorage.getItem(AUTH_TOKEN_KEY);
+            const expiryTime = localStorage.getItem(TOKEN_EXPIRY_KEY);
+            
+            if (!token || !expiryTime || Date.now() > (parseInt(expiryTime) - 300000)) {
+                await getNewToken();
+            }
+        }
+    
+        async function getNewToken() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: 'user1', password: 'user1' })
+                });
+                if (!response.ok) throw new Error(`Failed to authenticate: ${response.status}`);
+                const data = await response.json();
+                localStorage.setItem(AUTH_TOKEN_KEY, data.accessToken);
+                localStorage.setItem(TOKEN_EXPIRY_KEY, Date.now() + 24 * 60 * 60 * 1000);
+                return data.accessToken;
+            } catch (error) {
+                console.error('Token refresh error:', error);
+                throw error;
+            }
+        }
+    
+        async function getToken() {
+            await refreshTokenIfNeeded();
+            return localStorage.getItem(AUTH_TOKEN_KEY);
+        }
+    
+        function loadSubscriberInfo() {
+            const subscriberData = sessionStorage.getItem('current_subscriber');
+            if (subscriberData) {
+                const subscriber = JSON.parse(subscriberData);
+                const subscriberInfoElement = document.getElementById('subscriber-info');
+                if (subscriberInfoElement) {
+                    subscriberInfoElement.innerHTML = `
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title mb-0">Subscriber Information</h5>
+                                    <button class="btn btn-sm btn-outline-primary change-subscriber" onclick="window.location.href='index.html'">Change</button>
+                                </div>
+                                <p class="mt-3"><strong>Mobile:</strong> ${subscriber.mobileNumber || subscriber.mobile || 'N/A'}</p>
+                                <p><strong>Name:</strong> ${subscriber.name || 'N/A'}</p>
+                                ${subscriber.currentPlan ? `<p><strong>Current Plan:</strong> ${subscriber.currentPlan}</p>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        }
+    
+        async function fetchAllPlans() {
+            try {
+                showLoadingSpinner();
+                const token = await getToken();
+                const response = await fetch(`${API_BASE_URL}/api/plans`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+    
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch plans: ${response.status}`);
+                }
+    
+                plansData = await response.json();
+                console.log('Fetched plans:', plansData);
+                loadCategories(plansData);
+                renderPlans(plansData); // Initially show all plans
+            } catch (error) {
+                console.error('Error fetching plans:', error);
+                plansContainer.innerHTML = `
+                    <div class="col-12 text-center">
+                        <div class="alert alert-danger">
+                            <strong>Error!</strong> Failed to load plans: ${error.message}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    
+        function filterPlans() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const activeCategory = categoryTabs.querySelector('.nav-link.active')?.getAttribute('data-category') || 'all';
+            
+            let filteredPlans = plansData.filter(plan => 
+                (plan.planName?.toLowerCase().includes(searchTerm) || 
+                 plan.description?.toLowerCase().includes(searchTerm) ||
+                 plan.category?.toLowerCase().includes(searchTerm))
+            );
+    
+            if (activeCategory !== 'all') {
+                filteredPlans = filteredPlans.filter(plan => plan.category === activeCategory);
+            }
+            
+            renderPlans(filteredPlans);
+        }
+    
+        function showLoadingSpinner() {
+            if (plansContainer) {
+                plansContainer.innerHTML = `
+                    <div class="col-12 loading-spinner">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    
+        function renderPlans(plans) {
+            if (!plansContainer) return;
+            
+            if (!plans || plans.length === 0) {
+                plansContainer.innerHTML = `<div class="col-12 text-center"><p>No plans found.</p></div>`;
+                return;
+            }
+            
+            let html = '';
+            plans.forEach(plan => {
+                // Remove .toFixed(2) for card display to show whole numbers only
+                const price = plan.amount ? Math.floor(plan.amount) : '0';
+                
+                html += `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card plan-card">
+                            <div class="card-header">
+                                <h5 class="mb-0">${plan.planName || 'Unnamed Plan'}</h5>
+                                <span class="badge-custom">${plan.category || 'Uncategorized'}</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="plan-price">₹${price}</div>
+                                <div class="plan-validity">${plan.validity || 'N/A'} days validity</div>
+                                <div class="plan-features mb-3">
+                                    <div class="feature-item">
+                                        <div class="feature-icon"><i class="fas fa-wifi"></i></div>
+                                        <div>${plan.data || 'N/A'} data</div>
+                                    </div>
+                                    <div class="feature-item">
+                                        <div class="feature-icon"><i class="fas fa-phone-alt"></i></div>
+                                        <div>${plan.voice || 'N/A'}</div>
+                                    </div>
+                                    <div class="feature-item">
+                                        <div class="feature-icon"><i class="fas fa-sms"></i></div>
+                                        <div>${plan.sms || 'N/A'} SMS</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <button class="btn btn-view-details" data-plan-id="${plan.id}">View Details</button>
+                                    <button class="btn btn-recharge" onclick="rechargePlan('${plan.id}')">Recharge</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            plansContainer.innerHTML = html;
+        }
+    
+        function loadCategories(plans) {
+            if (!categoryTabs) return;
+            
+            categories = new Set(plans.map(plan => plan.category).filter(cat => cat));
+            let categoryTabsHTML = `
+                <li class="nav-item">
+                    <a class="nav-link active" href="#" data-category="all">All Plans</a>
+                </li>
+            `;
+            
+            categories.forEach(category => {
+                categoryTabsHTML += `
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-category="${category}">${category}</a>
+                    </li>
+                `;
+            });
+            
+            categoryTabs.innerHTML = categoryTabsHTML;
+            
+            categoryTabs.querySelectorAll('.nav-link').forEach(tab => {
+                tab.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    categoryTabs.querySelectorAll('.nav-link').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    const selectedCategory = this.getAttribute('data-category');
+                    filterPlansByCategory(selectedCategory);
+                });
+            });
+        }
+    
+        function filterPlansByCategory(category) {
+            const searchTerm = searchInput?.value.toLowerCase() || '';
+            let filteredPlans = plansData;
+            
+            if (category !== 'all') {
+                filteredPlans = plansData.filter(plan => plan.category === category);
+            }
+            
+            if (searchTerm) {
+                filteredPlans = filteredPlans.filter(plan => 
+                    (plan.planName?.toLowerCase().includes(searchTerm) || 
+                     plan.description?.toLowerCase().includes(searchTerm) ||
+                     plan.category?.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            renderPlans(filteredPlans);
+        }
+    
+        function handlePlanDetailsClick(e) {
+            const button = e.target.closest('.btn-view-details');
+            if (button) {
+                const planId = button.getAttribute('data-plan-id');
+                showPlanDetails(planId);
+                planDetailModal.show();
+            }
+        }
+    
+        function showPlanDetails(planId) {
+            const plan = plansData.find(p => String(p.id) === String(planId));
+            
+            if (!plan) {
+                modalPlanName.textContent = 'Error';
+                modalPlanDetails.innerHTML = '<p>Plan not found. Please try again.</p>';
+                console.error('Plan not found for ID:', planId);
+                return;
+            }
+    
+            modalPlanName.textContent = plan.planName || 'Unnamed Plan';
+            // Keep decimals in the modal details
+            modalPlanDetails.innerHTML = `
+                <p><strong>Price:</strong> ₹${plan.amount?.toFixed(2) || '0.00'}</p>
+                <p><strong>Validity:</strong> ${plan.validity || 'N/A'} days</p>
+                <p><strong>Benefits:</strong> ${plan.data || 'N/A'} Data, ${plan.voice || 'N/A'}, ${plan.sms || 'N/A'} SMS</p>
+                <p><strong>Description:</strong> ${plan.description || "No description available."}</p>
+                <hr>
+                <p><strong>Terms & Conditions:</strong> ${plan.termsandcondition || "Standard terms apply."}</p>
+                <div class="d-flex justify-content-between mt-3">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button class="btn btn-success" onclick="rechargePlan('${plan.id}')">Recharge Now</button>
+                </div>
+            `;
+        }
+    
+        async function rechargePlan(planId) {
+            const subscriberData = sessionStorage.getItem('current_subscriber');
+            if (!subscriberData) {
+                alert('Please validate your mobile number first');
+                window.location.href = 'index.html';
+                return;
+            }
+    
+            const subscriber = JSON.parse(subscriberData);
+            const plan = plansData.find(p => String(p.id) === String(planId));
+    
+            if (!plan) {
+                alert('Plan not found. Please try again.');
+                return;
+            }
+    
+            const rechargeData = {
+                mobileNumber: subscriber.mobileNumber || subscriber.mobile,
+                planId: planId,
+                planName: plan.planName,
+                amount: plan.amount,
+                validity: plan.validity,
+                data: plan.data,
+                voice: plan.voice,
+                sms: plan.sms
+            };
+            sessionStorage.setItem('pending_recharge', JSON.stringify(rechargeData));
+            window.location.href = 'payment.html';
+        }
+    </script>
+</body>
+</html>
